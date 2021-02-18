@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+	<title>Menú</title>
+</head>
+<body class="bg-secondary">
+<nav class="navbar navbar-dark bg-danger">
+	<a class="navbar-brand">Atenas</a>
+	<form class="form-inline">
+		<input class="form-control mr-sm-2" type="search" placeholder="Localiza tu envío" aria-label="Search">
+		<button class="btn btn-outline-light my-2 my-sm-0" type="submit">Rastrear</button>
+	</form>
+</nav>
+<div class="container bg-secondary pt-5">
+	<div class="card text-center border-0">
+		<div class="card-header bg-dark">
+			<ul class="nav nav-tabs card-header-tabs">
+				<li class="nav-item">
+					<a class="nav-link active bg-danger text-white" id="nav-principal-tab" data-toggle="tab" href="#nav-principal" role="tab" aria-controls="principal" aria-selected="true">Principal</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link bg-danger text-white" id="nav-cotizacion-tab" data-toggle="tab" href="#nav-cotizacion" role="tab" aria-controls="nav-cotizacion" aria-selected="false">Cotización</a>
+				</li>              
+				<li class="nav-item">
+					<a class="nav-link bg-danger text-white" id="nav-estado-tab" data-toggle="tab" href="#nav-estado" role="tab" aria-controls="nav-estado" aria-selected="false">Estado de envío</a>
+				</li>
+			</ul>
+		</div>
+		<div class="card-body tab-content" id="nav-tabContent">
+			<div class="tab-pane fade show active" id="nav-principal" role="tabpanel" aria-labelledby="nav-principal-tab">
+				<h5 class="card-title">¿Quiénes somos?</h5>
+				<p class="card-text">Hola mundo</p>
+			</div>
+			<div class="tab-pane fade" id="nav-cotizacion" role="tabpanel" aria-labelledby="nav-cotizacion-tab">
+				<h5 class="card-title">Cotiza tu envío</h5>
+				<p class="card-text">Hola mundo</p>
+			</div>
+			<div class="tab-pane fade" id="nav-estado" role="tabpanel" aria-labelledby="nav-estado-tab">
+				<h5 class="card-title">Observa el estado de tu envío</h5>
+				<p class="card-text">Hola mundo</p>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
