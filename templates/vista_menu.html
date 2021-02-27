@@ -15,6 +15,105 @@
 		color: inherit;
 	}
 	</style>
+	<script type="text/javascript">
+		function filtrar() {
+			var table, tr, td, i, c, d, e, fecha, documento, ciudad;
+			documento = document.getElementById("input-documento2").value;
+			ciudad = document.getElementById("select-ciudad").value.toUpperCase();
+			fecha = document.getElementById("input-fecha").value;
+			table = document.getElementById("tabla-envios");
+			tbody = table.getElementsByTagName("tbody")[0];
+			tr = tbody.getElementsByTagName("tr");
+
+			for (i = 0; i < tr.length; i++) {
+				c = false;
+				d = false;
+				e = false;
+				td = tr[i].getElementsByTagName("td")[0];
+				if (documento != 0) {
+					if (td.innerText.startsWith(documento)) {
+						c = true;
+					}
+				}
+				else {
+					c = true;
+				}
+				td = tr[i].getElementsByTagName("td")[3];
+				if (ciudad != 0) {
+					if (td.innerText.toUpperCase().indexOf(ciudad) > -1) {
+						d = true;
+					}
+				}
+				else {
+					d = true;
+				}
+				td = tr[i].getElementsByTagName("td")[5];
+				if (fecha != "" || fecha != "aaaa-mm-dd") {
+					if (td.innerText.toUpperCase().indexOf(fecha) > -1) {
+						e = true;
+					}
+				}
+				else {
+					e = true;
+				}
+				if (c && d && e) {
+					tr[i].style.display = "";
+				}
+				else {
+					tr[i].style.display = "none";
+				}
+			}
+		}
+
+		function filtrar2() {
+			var table, tr, td, i, d, e, fecha, ciudad;
+			ciudad = document.getElementById("select-ciudad2").value.toUpperCase();
+			fecha = document.getElementById("input-fecha2").value;
+			table = document.getElementById("tabla-envios2");
+			tbody = table.getElementsByTagName("tbody")[0];
+			tr = tbody.getElementsByTagName("tr");
+
+			for (i = 0; i < tr.length; i++) {
+				d = false;
+				e = false;
+				td = tr[i].getElementsByTagName("td")[2];
+				if (ciudad != 0) {
+					if (td.innerText.toUpperCase().indexOf(ciudad) > -1) {
+						d = true;
+					}
+				}
+				else {
+					d = true;
+				}
+				td = tr[i].getElementsByTagName("td")[4];
+				if (fecha != "" || fecha != "aaaa-mm-dd") {
+					if (td.innerText.toUpperCase().indexOf(fecha) > -1) {
+						e = true;
+					}
+				}
+				else {
+					e = true;
+				}
+				if (d && e) {
+					tr[i].style.display = "";
+				}
+				else {
+					tr[i].style.display = "none";
+				}
+			}
+		}
+
+		function mostrar_contraseña() {
+			if(document.getElementById("select-usuario").value == 0) {
+				document.getElementById("input-contraseña").disabled = true;
+				document.getElementById("input-contraseña").required = false;
+			}
+			else{
+				document.getElementById("input-contraseña").disabled = false;
+				document.getElementById("input-contraseña").required = true;
+			}
+		}
+	</script>
 	<title>Menú</title>
 </head>
 <body class="bg-secondary d-flex flex-column h-100">
@@ -34,10 +133,11 @@
 	<a class="navbar-brand">
 		<img src="{{ url_for('static', filename = 'img/logo2.png') }}" width="6.25%">
 	Atenas</a>
-	<form class="form-inline d-flex flex-row-reverse w-100">
-		<button class="btn text-white bg-dark" type="submit">Rastrear</button>
-		<input class="form-control mr-sm-2" type="search" placeholder="Localiza tu envío" aria-label="Search">
-	</form>
+	{% if sesion != 0 %}
+		<form class="form-inline d-flex flex-row-reverse w-100" action="/logout" method="POST">
+			<button class="btn text-white bg-dark" type="submit">Cerrar sesión</button>
+		</form>
+	{% endif %}
 </nav>
 <div class="px-5 pt-5 h-75">
 	<div class="card text-center border-0 h-100">
@@ -53,12 +153,15 @@
 				{% endif %}
 				{% if sesion == 2 %}
 					<li class="nav-item">
-						<a class="nav-link active" id="nav-cotizacion-tab" data-toggle="tab" href="#nav-cotizacion" role="tab" aria-controls="nav-cotizacion" aria-selected="false">Cotización</a>
+						<a class="nav-link active" id="nav-estado-tab" data-toggle="tab" href="#nav-estado" role="tab" aria-controls="nav-estado" aria-selected="false">Listado de envíos</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" id="nav-cotizacion-tab" data-toggle="tab" href="#nav-cotizacion" role="tab" aria-controls="nav-cotizacion" aria-selected="false">Solicitar envío</a>
 					</li>
 				{% endif %}
 				{% if sesion == 1 %}
 					<li class="nav-item">
-						<a class="nav-link active" id="nav-estado-tab" data-toggle="tab" href="#nav-estado" role="tab" aria-controls="nav-estado" aria-selected="false">Estado de envío</a>
+						<a class="nav-link active" id="nav-estado-tab" data-toggle="tab" href="#nav-estado" role="tab" aria-controls="nav-estado" aria-selected="false">Listado de envíos</a>
 					</li>
 				{% endif %}
 			</ul>
@@ -67,12 +170,12 @@
 			{% if sesion == 0 %}
 				<div class="tab-pane fade show active" id="nav-registro" role="tabpanel" aria-labelledby="nav-principal-tab">
 					<h5 class="card-title">Ingresa tus datos</h5>
-					<form class="card-text" action="/signup" method="POST">
+					<form class="card-text needs-validation" action="/signup" method="POST">
 						<div class="row">
 							<div class="form-group row col-sm-7">
 								<label class="col-sm-6 col-form-label text-right" for="input-nombre">Nombre:</label>
 								<div class="input-group pl-0 mb-3 col-sm-6">
-									<input type="text" class="form-control" name="input-nombre" id="input-nombre">
+									<input type="text" class="form-control" name="input-nombre" id="input-nombre" required>
 								</div>
 							</div>
 						</div>
@@ -80,7 +183,7 @@
 							<div class="form-group row col-sm-7">
 								<label class="col-sm-6 col-form-label text-right" for="input-documento">Documento de identidad:</label>
 								<div class="input-group pl-0 mb-3 col-sm-4">
-									<input type="text" class="form-control" name="input-documento" id="input-documento">
+									<input type="text" class="form-control" name="input-documento" id="input-documento" required>
 								</div>
 							</div>
 							<div class="form-group row col-sm-5">
@@ -94,13 +197,13 @@
 							<div class="form-group row col-sm-7">
 								<label class="col-sm-6 col-form-label text-right" for="input-direccion">Dirección:</label>
 								<div class="input-group pl-0 mb-3 col-sm-4">
-									<input type="text" class="form-control" name="input-direccion" id="input-direccion">
+									<input type="text" class="form-control" name="input-direccion" id="input-direccion" required>
 								</div>
 							</div>
 							<div class="form-group row col-sm-5">
 								<label class="col-sm-3 col-form-label text-right" for="input-telefono">Telefono:</label>
 								<div class="input-group pl-0 mb-3 col-sm-6">
-									<input type="number" class="form-control" name="input-telefono" id="input-telefono" min="1">
+									<input type="number" class="form-control" name="input-telefono" id="input-telefono" min="1" required>
 								</div>
 							</div>
 						</div>
@@ -110,27 +213,43 @@
 				<div class="tab-pane fade" id="nav-entrar" role="tabpanel" aria-labelledby="nav-entrar-tab">
 					<h5 class="card-title">Ingresa tus datos</h5>
 					<form class="card-text" action="/login" method="POST">
+						<div class="form-group row col-sm">
+							<label class="col-sm-6 col-form-label text-right" for="select-usuario">Tipo de usuario:</label>
+							<select class="form-control pl-0 mb-3 col-sm-4" id="select-usuario" name="select-usuario" onchange="mostrar_contraseña()" required>
+								<option value=0>Cliente</option>
+								<option value=1>Operario</option>
+							</select>
+						</div>
 						<div class="row">
 							<div class="form-group row col-sm">
-								<label class="col-sm-6 col-form-label text-right" for="input-documento">Documento de identidad:</label>
+								<label class="col-sm-6 col-form-label text-right" for="input-documento1">Documento de identidad:</label>
 								<div class="input-group pl-0 mb-3 col-sm-4">
-									<input type="text" class="form-control" name="input-documento" id="input-documento">
+									<input type="text" class="form-control" name="input-documento" id="input-documento1" required>
 								</div>
 							</div>
 						</div>
+						<div class="row">
+							<div class="form-group row col-sm">
+								<label class="col-sm-6 col-form-label text-right" for="input-contraseña">Contraseña:</label>
+								<div class="input-group pl-0 mb-3 col-sm-4">
+									<input type="password" class="form-control" name="input-contraseña" id="input-contraseña" disabled>
+								</div>
+							</div>
+						</div>
+						<br>
 						<button type="submit" class="btn btn-dark">Ingresar</button>
 					</form>
 				</div>
 			{% endif %}
 			{% if sesion == 2 %}
-				<div class="tab-pane fade show active" id="nav-cotizacion" role="tabpanel" aria-labelledby="nav-cotizacion-tab">
-					<h5 class="card-title">Cotiza tu envío</h5>
+				<div class="tab-pane fade" id="nav-cotizacion" role="tabpanel" aria-labelledby="nav-cotizacion-tab">
+					<h5 class="card-title">Describe el producto</h5>
 					<br>
-					<form class="card-text" action="/cotizacion" method="POST">
+					<form class="card-text" action="/solicitar_envio" method="POST">
 						<div class="row">
 							<div class="form-group row col-sm-7">
 								<label class="col-sm-6 col-form-label text-right" for="select-tipo">Selecciona el tipo de producto:</label>
-								<select class="form-control col-sm-4" name="select-tipo" id="select-tipo">
+								<select class="form-control col-sm-4" name="select-tipo" id="select-tipo" required>
 									<option value="Paquete">Paquete</option>
 									<option value="Documento">Documento</option>
 								</select>
@@ -138,9 +257,9 @@
 							<div class="form-group row col-sm-5">
 								<label class="col-sm-3 col-form-label text-right" for="input-medida">Medidas:</label>
 								<div class="input-group mb-3 col-sm-7" id="input-medida">
-									<input type="number" class="form-control" name="input-medida1" id="input-medida1" aria-describedby="medida" min="1">
-									<input type="number" class="form-control" name="input-medida2" id="input-medida2" aria-describedby="medida" min="1">
-									<input type="number" class="form-control" name="input-medida3" id="input-medida3" aria-describedby="medida" min="1">
+									<input type="number" class="form-control" name="input-medida1" id="input-medida1" aria-describedby="medida" min="1" required>
+									<input type="number" class="form-control" name="input-medida2" id="input-medida2" aria-describedby="medida" min="1" required>
+									<input type="number" class="form-control" name="input-medida3" id="input-medida3" aria-describedby="medida" min="1" required>
 									<div class="input-group-append">
 										<span class="input-group-text bg-danger text-white" id="medida">cm</span>
 									</div>
@@ -151,7 +270,7 @@
 							<div class="form-group row col-sm-7">
 								<label class="col-sm-6 col-form-label text-right" for="input-peso">Peso:</label>
 								<div class="input-group pl-0 mb-3 col-sm-4">
-									<input type="number" class="form-control" name="input-peso" id="input-peso" aria-describedby="peso" min="1">
+									<input type="number" class="form-control" name="input-peso" id="input-peso" aria-describedby="peso" min="1" required>
 									<div class="input-group-append">
 										<span class="input-group-text bg-danger text-white" id="peso">Kg</span>
 									</div>
@@ -159,10 +278,11 @@
 							</div>
 							<div class="form-group row col-sm-5">
 								<label class="col-sm-3 col-form-label mr-3 text-right" for="select-destino">Destino:</label>
-								<select class="form-control col-sm-6" name="select-destino" id="select-destino">
+								<select class="form-control col-sm-6" name="select-destino" id="select-destino" required>
+										<option value="">Selecciona una opción</option>
 									{% for municipio in municipios %}
 										<option value="{{municipio[0]}}">{{municipio[1]}}</option>
-									{% endfor %}
+									{% endfor %} 
 								</select>
 							</div>
 						</div>
@@ -170,11 +290,17 @@
 							<div class="form-group row col-sm-7">
 								<label class="col-sm-6 col-form-label text-right" for="input-direccion">Dirección:</label>
 								<div class="input-group pl-0 mb-3 col-sm-4">
-									<input type="text" class="form-control" name="input-direccion" id="input-direccion">
+									<input type="text" class="form-control" name="input-direccion" id="input-direccion" required>
+								</div>
+							</div>
+							<div class="form-group row col-sm-5">
+								<label class="col-sm-6 col-form-label mr-3 text-right" for="input-documento3">Documento de identidad:</label>
+								<div class="input-group pl-0 mb-3 col-sm-4">
+									<input type="text" class="form-control" name="input-documento" id="input-documento3" required>
 								</div>
 							</div>
 						</div>
-						<center><button type="button" class="btn btn-dark" data-toggle="modal" data-target="#modalDescripcion">Cotizar</button></center>
+						<center><button type="button" class="btn btn-dark" data-toggle="modal" data-target="#modalDescripcion">Añadir descripción</button></center>
 						<div class="modal" id="modalDescripcion" tabindex="-1">
 							<div class="modal-dialog modal-dialog-centered">
 								<div class="modal-content">
@@ -190,25 +316,48 @@
 										</div>
 									</div>
 									<div class="modal-footer">
-										<button type="submit" class="btn btn-dark">Cotizar</button>
+										<button type="submit" class="btn btn-dark">Enviar</button>
 									</div>
 								</div>
 							</div>
 						</div>
 					</form>
 				</div>
-			{% endif %}
-			{% if sesion == 1 %}
 				<div class="tab-pane fade show active" id="nav-estado" role="tabpanel" aria-labelledby="nav-estado-tab">
-					<h5 class="card-title">Envíos realizados</h5>
-					<table class="table table-striped card-text">
+					<form>
+						<h5 class="card-title">Envíos</h5>
+						<div class="row">
+							<div class="form-group row col-sm">
+								<label class="col-sm-7 col-form-label text-right" for="input-documento2">Documento de identidad:</label>
+								<div class="input-group pl-0 mb-3 col-sm-5">
+									<input type="text" class="form-control" name="input-documento" id="input-documento2" onchange="filtrar()">
+								</div>
+							</div>
+							<div class="form-group row col-sm">
+								<label class="col-sm-5 col-form-label text-right" for="select-ciudad">Ciudad:</label>
+								<select class="form-control col-sm-7" name="select-ciudad" id="select-ciudad" onchange="filtrar()">
+									<option value="0">No filtrar</option>
+									{% for municipio in municipios %}
+										<option value="{{municipio[1]}}">{{municipio[1]}}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="form-group row col-sm">
+								<label class="col-sm-5 col-form-label text-right" for="input-fecha">Fecha:</label>
+								<input class="form-control w-50 col-sm-5" type="date" name="input-fecha" id="input-fecha" onchange="filtrar()">
+							</div>
+						</div>
+					</form>
+					<table class="table table-striped card-text" name="tabla-envios" id="tabla-envios">
 						<thead class="thead-light">
 							<tr>
 								<th scope="col">Tipo de producto</th>
+								<th scope="col">Documento</th>
 								<th scope="col">Tamaño (cm)</th>
 								<th scope="col">Peso (kg)</th>
 								<th scope="col">Destino</th>
 								<th scope="col">Dirección</th>
+								<th scope="col">Fecha</th>
 								<th scope="col">Descripción</th>
 							</tr>
 						</thead>
@@ -221,6 +370,56 @@
 									<td>{{envio[3]}}</td>
 									<td>{{envio[4]}}</td>
 									<td>{{envio[5]}}</td>
+									<td>{{envio[6]}}</td>
+									<td>{{envio[7]}}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			{% endif %}
+			{% if sesion == 1 %}
+				<div class="tab-pane fade show active" id="nav-estado" role="tabpanel" aria-labelledby="nav-estado-tab">
+					<h5 class="card-title">Envíos realizados</h5>
+					<form>
+						<div class="row">
+							<div class="form-group row col-sm">
+								<label class="col-sm-5 col-form-label text-right" for="select-ciudad2">Ciudad:</label>
+								<select class="form-control col-sm-7" name="select-ciudad2" id="select-ciudad2" onchange="filtrar2()">
+									<option value="0">No filtrar</option>
+									{% for municipio in municipios %}
+										<option value="{{municipio[1]}}">{{municipio[1]}}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="form-group row col-sm">
+								<label class="col-sm-5 col-form-label text-right" for="input-fecha2">Fecha:</label>
+								<input class="form-control w-50 col-sm-5" type="date" name="input-fecha2" id="input-fecha2" onchange="filtrar2()">
+							</div>
+						</div>
+					</form>
+					<table class="table table-striped card-text" id="tabla-envios2">
+						<thead class="thead-light">
+							<tr>
+								<th scope="col">Tipo de producto</th>
+								<th scope="col">Tamaño (cm)</th>
+								<th scope="col">Peso (kg)</th>
+								<th scope="col">Destino</th>
+								<th scope="col">Dirección</th>
+								<th scope="col">Fecha</th>
+								<th scope="col">Descripción</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for envio in envios %}
+								<tr>
+									<th scope="row">{{envio[0]}}</th>
+									<td>{{envio[1]}}</td>
+									<td>{{envio[2]}}</td>
+									<td>{{envio[3]}}</td>
+									<td>{{envio[4]}}</td>
+									<td>{{envio[5]}}</td>
+									<td>{{envio[6]}}</td>
 								</tr>
 							{% endfor %}
 						</tbody>
@@ -231,7 +430,7 @@
 	</div>
 </div>
 <footer class="footer mt-auto py-3 bg-danger">
-	<div class="container">
+	<div class="container" id="prueba">
 		<span class="text-white">Espacio para información de redes sociales y asistencia.</span>
 	</div>
 </footer>
