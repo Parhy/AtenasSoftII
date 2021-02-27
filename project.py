@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, url_for, redirect, flash, ses
 from datetime import datetime
 from flask_mysqldb import MySQL
 
+import hashlib
+
 app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
@@ -17,11 +19,13 @@ id_cliente = 0
 @app.route("/home")
 def index():
 	global sesion
-	global documento
 	cur = mysql.connection.cursor()
-	cur.execute('SELECT id, nombre FROM municipio')
+	cur.execute('SELECT id, nombre FROM municipio ORDER BY nombre')
 	municipios = cur.fetchall()
-	cur.execute('SELECT p.tipo, p.tamaño, p.peso, m.nombre, e.direccion, p.descripcion FROM envio e JOIN producto p ON e.id_producto = p.id JOIN municipio m ON e.id_municipio = m.id WHERE e.id_cliente = "%s"' % id_cliente)
+	if(sesion == 1):
+		cur.execute('SELECT p.tipo, p.tamaño, p.peso, m.nombre, e.direccion, e.fecha, p.descripcion FROM envio e JOIN producto p ON e.id_producto = p.id JOIN municipio m ON e.id_municipio = m.id WHERE e.id_cliente = "%s"' % id_cliente)
+	elif(sesion == 2):
+		cur.execute('SELECT p.tipo, c.documento, p.tamaño, p.peso, m.nombre, e.direccion, e.fecha, p.descripcion FROM envio e JOIN producto p ON e.id_producto = p.id JOIN municipio m ON e.id_municipio = m.id JOIN cliente c ON e.id_cliente = c.id')
 	envios = cur.fetchall()
 	return render_template('vista_menu.html', municipios = municipios, sesion = sesion, envios = envios)
 
@@ -32,15 +36,27 @@ def login():
 		global id_cliente
 		documento = request.form['input-documento']
 		cur = mysql.connection.cursor()
-		cur.execute('SELECT id FROM cliente WHERE documento = "%s"' % documento)
-		data = cur.fetchall()[0]
-		try:
-			if data[0]:
-				flash('Has iniciado sesion')
-				id_cliente = data[0]
-				sesion = 1
-		except:
-			flash('Este documento no se encuentra registrado')
+		print(request.form['select-usuario'])
+		if(request.form['select-usuario'] == "0"):
+			cur.execute('SELECT id FROM cliente WHERE documento = "%s"' % documento)
+			try:
+				data = cur.fetchall()[0]
+				if data[0]:
+					flash('Has iniciado sesion')
+					id_cliente = data[0]
+					sesion = 1
+			except:
+				flash('Este documento no se encuentra registrado')
+		elif(request.form['select-usuario'] == "1"):
+			contraseña = hashlib.md5(hashlib.md5(hashlib.md5(request.form['input-contraseña'].encode("utf-8")).hexdigest().encode("utf-8")).hexdigest().encode("utf-8")).hexdigest()
+			cur.execute('SELECT id FROM operario WHERE documento = "%s" AND contraseña = "%s"' % (documento, contraseña))
+			try:
+				data = cur.fetchall()[0]
+				if data[0]:
+					flash('Has iniciado sesion')
+					sesion = 2
+			except:
+				flash('Este documento no se encuentra registrado')
 	return redirect(url_for('index'))
 
 @app.route("/signup", methods=['POST'])
@@ -72,9 +88,17 @@ def signup():
 		
 	return redirect(url_for('index'))
 
-@app.route("/cotizacion", methods=['POST'])
-def cotizacion():
+@app.route("/logout", methods=['POST'])
+def logout():
+	global sesion
 	global id_cliente
+	if request.method == 'POST':
+		id_cliente = 0
+		sesion = 0
+	return redirect(url_for('index'))
+
+@app.route("/solicitar_envio", methods=['POST'])
+def enviar():
 	global sesion
 	session.pop('Registro de envío exitoso', None)
 	session.pop('Has iniciado sesion', None)
@@ -88,6 +112,7 @@ def cotizacion():
 		destino = request.form['select-destino']
 		direccion = request.form['input-direccion']
 		descripcion = request.form['textarea-descripcion']
+		documento = request.form['input-documento']
 
 		cur = mysql.connection.cursor()
 		cur.execute('INSERT INTO producto (tipo, tamaño, peso, descripcion) values ("%s", "%s", "%s", "%s")' %
@@ -98,12 +123,23 @@ def cotizacion():
 
 		id_producto = cur.fetchall()[0][0]
 
+		cur.execute('SELECT id FROM cliente WHERE documento = "%s"' % (documento))
+
+		id_cliente = cur.fetchall()[0][0]
+
 		cur.execute('INSERT INTO envio (direccion, id_producto, id_cliente, id_municipio) values ("%s", "%s", "%s", "%s")' %
 			(direccion, id_producto, id_cliente, destino))
 		mysql.connection.commit()
 		flash('Registro de envío exitoso')
 		sesion = 0
 	return redirect(url_for('index'))
+
+@app.route("/buscar_envios", methods=['POST'])
+def buscar_envios():
+	if(request.method == 'POST'):
+		documento = request.form['input-documento']
+		cur = mysql.connection.cursor()
+		cur.execute('SELECT * FROM cliente WHERE documento = "%s"' % documento)
 
 if __name__ == "__main__":
 	app.run(debug=True)
